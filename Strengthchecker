@@ -1,0 +1,373 @@
+#   The code given below is for check your password strength and create a new wordlist for performing brute force attack
+#   The code is in HTML and CSS language
+#   this code is for checking and creating wordlist.
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Password Strength Analyzer & Custom Wordlist Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    /* Custom scrollbar for textarea */
+    textarea::-webkit-scrollbar {
+      width: 8px;
+    }
+    textarea::-webkit-scrollbar-thumb {
+      background-color: #a0aec0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-indigo-700 text-white p-4 shadow-md">
+    <div class="container mx-auto flex items-center justify-between">
+      <h1 class="text-xl font-bold flex items-center space-x-2">
+        <i class="fas fa-shield-alt"></i>
+        <span>Password Strength Analyzer & Wordlist Generator</span>
+      </h1>
+    </div>
+  </header>
+
+  <main class="flex-grow container mx-auto p-4 max-w-4xl">
+    <section class="bg-white rounded-lg shadow p-6 mb-8">
+      <h2 class="text-2xl font-semibold mb-4 text-indigo-700 flex items-center space-x-2">
+        <i class="fas fa-key"></i>
+        <span>Analyze Password Strength</span>
+      </h2>
+      <form id="analyzeForm" class="space-y-4">
+        <label for="passwordInput" class="block font-medium text-gray-700">
+          Enter Password to Analyze
+        </label>
+        <input
+          type="password"
+          id="passwordInput"
+          name="passwordInput"
+          class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Enter your password"
+          required
+          autocomplete="off"
+        />
+        <button
+          type="submit"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition"
+        >
+          Analyze Strength
+        </button>
+      </form>
+      <div id="strengthResult" class="mt-6 p-4 rounded-md hidden"></div>
+    </section>
+
+    <section class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold mb-4 text-indigo-700 flex items-center space-x-2">
+        <i class="fas fa-list-ul"></i>
+        <span>Custom Wordlist Generator</span>
+      </h2>
+      <form id="wordlistForm" class="space-y-4">
+        <div>
+          <label for="nameInput" class="block font-medium text-gray-700 mb-1">
+            Name(s) (comma separated)
+          </label>
+          <input
+            type="text"
+            id="nameInput"
+            name="nameInput"
+            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="e.g. Alice,Bob"
+            autocomplete="off"
+          />
+        </div>
+        <div>
+          <label for="dateInput" class="block font-medium text-gray-700 mb-1">
+            Important Dates (comma separated, YYYYMMDD or YYYY)
+          </label>
+          <input
+            type="text"
+            id="dateInput"
+            name="dateInput"
+            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="e.g. 19900101,2020"
+            autocomplete="off"
+          />
+        </div>
+        <div>
+          <label for="petInput" class="block font-medium text-gray-700 mb-1">
+            Pet Names (comma separated)
+          </label>
+          <input
+            type="text"
+            id="petInput"
+            name="petInput"
+            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="e.g. Fluffy,Max"
+            autocomplete="off"
+          />
+        </div>
+        <div>
+          <label for="extraWordsInput" class="block font-medium text-gray-700 mb-1">
+            Extra Words (comma separated)
+          </label>
+          <input
+            type="text"
+            id="extraWordsInput"
+            name="extraWordsInput"
+            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="e.g. football,summer"
+            autocomplete="off"
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition"
+        >
+          Generate Wordlist
+        </button>
+      </form>
+      <div id="wordlistResult" class="mt-6">
+        <label for="wordlistOutput" class="block font-medium text-gray-700 mb-1">
+          Generated Wordlist
+        </label>
+        <textarea
+          id="wordlistOutput"
+          rows="10"
+          readonly
+          class="w-full border border-gray-300 rounded-md p-2 resize-y font-mono text-sm bg-gray-50"
+          placeholder="Your generated wordlist will appear here..."
+        ></textarea>
+        <button
+          id="downloadBtn"
+          class="mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          <i class="fas fa-download mr-2"></i>Download Wordlist (.txt)
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-indigo-700 text-white p-4 text-center text-sm">
+    &copy; 2024 Password Strength Analyzer & Wordlist Generator
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/zxcvbn@4.4.2/dist/zxcvbn.js"></script>
+  <script>
+    // Password strength analysis using zxcvbn
+    const analyzeForm = document.getElementById("analyzeForm");
+    const passwordInput = document.getElementById("passwordInput");
+    const strengthResult = document.getElementById("strengthResult");
+
+    analyzeForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const password = passwordInput.value.trim();
+      if (!password) return;
+
+      const result = zxcvbn(password);
+
+      const scoreText = [
+        "Very Weak",
+        "Weak",
+        "Fair",
+        "Strong",
+        "Very Strong",
+      ];
+
+      const scoreColors = [
+        "bg-red-500",
+        "bg-orange-500",
+        "bg-yellow-400",
+        "bg-green-500",
+        "bg-green-700",
+      ];
+
+      strengthResult.classList.remove("hidden");
+      strengthResult.innerHTML = `
+        <p class="font-semibold text-lg mb-2">Password Strength: <span class="${scoreColors[result.score]} text-white px-2 rounded">${scoreText[result.score]}</span></p>
+        <p><strong>Estimated Guesses:</strong> ${result.guesses.toLocaleString()}</p>
+        <p><strong>Crack Time (offline slow):</strong> ${result.crack_times_display.offline_slow_hashing_1e4_per_second}</p>
+        <p><strong>Feedback:</strong> ${result.feedback.warning || "No warnings."}</p>
+        <ul class="list-disc list-inside mt-2 text-gray-700">
+          ${result.feedback.suggestions
+            .map((s) => `<li>${s}</li>`)
+            .join("")}
+        </ul>
+      `;
+    });
+
+    // Wordlist generator logic
+    const wordlistForm = document.getElementById("wordlistForm");
+    const wordlistOutput = document.getElementById("wordlistOutput");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    // Leetspeak substitutions
+    const leetMap = {
+      a: ["4", "@"],
+      b: ["8"],
+      e: ["3"],
+      i: ["1", "!"],
+      l: ["1", "|"],
+      o: ["0"],
+      s: ["5", "$"],
+      t: ["7"],
+      g: ["9"],
+      z: ["2"],
+    };
+
+    // Generate leetspeak variants for a word
+    function generateLeetVariants(word) {
+      const variants = new Set();
+
+      function helper(pos, current) {
+        if (pos === word.length) {
+          variants.add(current);
+          return;
+        }
+        const char = word[pos].toLowerCase();
+        if (leetMap[char]) {
+          for (const sub of leetMap[char]) {
+            helper(pos + 1, current + sub);
+          }
+        }
+        helper(pos + 1, current + word[pos]);
+      }
+
+      helper(0, "");
+      return Array.from(variants);
+    }
+
+    // Append years and common patterns
+    function appendPatterns(words) {
+      const years = [];
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear - 10; y <= currentYear + 1; y++) {
+        years.push(y.toString());
+      }
+      const patterns = ["!", "123", "2024", "2023", "2022"];
+
+      const extended = new Set(words);
+
+      words.forEach((word) => {
+        years.forEach((year) => {
+          extended.add(word + year);
+          extended.add(year + word);
+        });
+        patterns.forEach((pat) => {
+          extended.add(word + pat);
+          extended.add(pat + word);
+        });
+      });
+
+      return Array.from(extended);
+    }
+
+    // Generate permutations of input arrays (cartesian product)
+    function cartesianProduct(arrays) {
+      return arrays.reduce(
+        (acc, curr) =>
+          acc
+            .map((x) => curr.map((y) => x.concat([y])))
+            .reduce((a, b) => a.concat(b), []),
+        [[]]
+      );
+    }
+
+    // Capitalize first letter
+    function capitalize(word) {
+      if (!word) return "";
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    wordlistForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      // Parse inputs
+      const namesRaw = document.getElementById("nameInput").value.trim();
+      const datesRaw = document.getElementById("dateInput").value.trim();
+      const petsRaw = document.getElementById("petInput").value.trim();
+      const extraRaw = document.getElementById("extraWordsInput").value.trim();
+
+      // Split and clean inputs
+      const names = namesRaw
+        ? namesRaw.split(",").map((w) => w.trim()).filter(Boolean)
+        : [];
+      const dates = datesRaw
+        ? datesRaw.split(",").map((w) => w.trim()).filter(Boolean)
+        : [];
+      const pets = petsRaw
+        ? petsRaw.split(",").map((w) => w.trim()).filter(Boolean)
+        : [];
+      const extraWords = extraRaw
+        ? extraRaw.split(",").map((w) => w.trim()).filter(Boolean)
+        : [];
+
+      // Base words combined
+      let baseWords = [...names, ...pets, ...extraWords];
+
+      // Add capitalized variants
+      const capitalizedWords = baseWords.map(capitalize);
+      baseWords = [...new Set([...baseWords, ...capitalizedWords])];
+
+      // Add leetspeak variants
+      let leetWords = [];
+      baseWords.forEach((word) => {
+        leetWords = leetWords.concat(generateLeetVariants(word));
+      });
+      leetWords = [...new Set(leetWords)];
+
+      // Combine base and leet words
+      let combinedWords = [...new Set([...baseWords, ...leetWords])];
+
+      // Append years and patterns
+      combinedWords = appendPatterns(combinedWords);
+
+      // Add dates as-is
+      const allWords = [...new Set([...combinedWords, ...dates])];
+
+      // Generate permutations of two words (word + date, date + word, word + word)
+      const twoWordCombos = new Set();
+
+      // word + date and date + word
+      allWords.forEach((w1) => {
+        allWords.forEach((w2) => {
+          if (w1 !== w2) {
+            twoWordCombos.add(w1 + w2);
+          }
+        });
+      });
+
+      // Combine all words and combos
+      const finalList = [...new Set([...allWords, ...twoWordCombos])];
+
+      // Sort and limit to 10000 entries max for performance
+      finalList.sort();
+      const limitedList = finalList.slice(0, 10000);
+
+      // Output to textarea
+      wordlistOutput.value = limitedList.join("\n");
+
+      // Enable download button
+      downloadBtn.disabled = false;
+    });
+
+    // Download wordlist as .txt file
+    downloadBtn.addEventListener("click", () => {
+      const text = wordlistOutput.value;
+      if (!text) return;
+
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "custom_wordlist.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
